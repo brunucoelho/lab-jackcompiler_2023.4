@@ -14,6 +14,7 @@ public class Scanner {
     private byte[] input;
     private int current;
     private int start;
+    private int line = 1; 
 
     private static final Map<String, TokenType> keywords;
  
@@ -53,8 +54,11 @@ public class Scanner {
     }
 
     private void skipLineComments() {
-        for (char ch = peek(); ch != '\n' && ch != 0;  advance(), ch = peek()) ;
- }
+
+        for (char ch = peek(); ch != '\n' && ch != 0; advance(), ch = peek())
+            if (ch == '\n')
+                line++;
+    }
 
  private void skipBlockComments() {
     boolean endComment = false;
@@ -62,6 +66,10 @@ public class Scanner {
     while (!endComment) {
         advance();
         char ch = peek();
+
+        if (ch == '\n')
+          line++;
+
         if ( ch == 0) { // eof, lexical error
             System.exit(1);
         }
@@ -86,142 +94,145 @@ private char peekNext () {
     }
 }
 
-    private void skipWhitespace() {
-        char ch = peek();
-        while (ch == ' ' || ch == '\r' || ch == '\t' || ch == '\n') {
-            advance();
-            ch = peek();
-        }
-    }
-    
+private void skipWhitespace() {
+    char ch = peek();
+    while (ch == ' ' || ch == '\r' || ch == '\t' || ch == '\n') {
 
-    public Token nextToken () {
+        if (ch == '\n')
+            line++;
 
-        skipWhitespace();
-
-        start = current;
-        char ch = peek();
-
-        if (Character.isDigit(ch)) {
-            return number();
-        }
-
-        if (isAlpha(ch)) {
-            return identifier();
-        }
-
-        switch (ch) {
-            
-            case '"':
-                return string();
-
-                case '/':
-               
-                  if (peekNext() == '/') {
-                    skipLineComments();
-                    return nextToken();
-                } else if (peekNext() == '*') {
-                    skipBlockComments();
-                    return nextToken();
-                }
-                  else {
-                    advance();
-                    return new Token (TokenType.SLASH,"/");
-                }
-
-            case '+':
-                advance();
-                return new Token (TokenType.PLUS,"+");
-            case '-':
-                advance();
-                return new Token (TokenType.MINUS,"-"); 
-            case '*':
-                advance();
-                return new Token (TokenType.ASTERISK,"*"); 
-            case '.':
-                advance();
-                return new Token (TokenType.DOT,"."); 
-            case '&':
-                advance();
-                return new Token (TokenType.AND,"&"); 
-            case '|':
-                advance();
-                return new Token (TokenType.OR,"|"); 
-            case '~':
-                advance();
-                return new Token (TokenType.NOT,"~"); 
-
-            case '>':
-                advance();
-                return new Token (TokenType.GT,">"); 
-            case '<':
-                advance();
-                return new Token (TokenType.LT,"<"); 
-            case '=':
-                advance();
-                return new Token (TokenType.EQ,"="); 
-        
-            case '(':
-                advance();
-                return new Token (TokenType.LPAREN,"("); 
-            case ')':
-                advance();
-                return new Token (TokenType.RPAREN,")"); 
-            case '{':
-                advance();
-                return new Token (TokenType.LBRACE,"{"); 
-            case '}':
-                advance();
-                return new Token (TokenType.RBRACE,"}"); 
-            case '[':
-                advance();
-                return new Token (TokenType.LBRACKET,"["); 
-            case ']':
-                advance();
-                return new Token (TokenType.RBRACKET,"]"); 
-            case ';':
-                advance();
-                return new Token (TokenType.SEMICOLON,";"); 
-            case ',':
-                advance();
-                return new Token (TokenType.COMMA,",");
-            case 0:
-                return new Token (EOF,"EOF");
-            default:
-                advance();
-                return new Token(ILLEGAL, Character.toString(ch));
-        }
-    }
-
-    private Token identifier() {
-        while (isAlphaNumeric(peek())) advance();
-
-        String id = new String(input, start, current-start, StandardCharsets.UTF_8)  ;
-        TokenType type = keywords.get(id);
-        if (type == null) type = IDENT;
-        return new Token(type, id);
-    }
-
-    private Token number() {
-        while (Character.isDigit(peek())) {
-            advance();
-        }
-        
-            String num = new String(input, start, current-start, StandardCharsets.UTF_8)  ;
-            return new Token(NUMBER, num);
-    }
-
-    private Token string () {
         advance();
-        start = current;
-        while (peek() != '"' && peek() != 0) {
-            advance();
-        }
-        String s = new String(input, start, current-start, StandardCharsets.UTF_8);
-        Token token = new Token (TokenType.STRING,s);
-        advance();
-        return token;
+        ch = peek();
     }
+}
+
+public Token nextToken () {
+    skipWhitespace();
+    start = current;
+    char ch = peek();
+
+    if (Character.isDigit(ch)) {
+        return number();
+    }
+
+    if (isAlpha(ch)) {
+        return identifier();
+    }
+
+    switch (ch) {
+        
+        case '"':
+            return string();
+
+        case '/':
+            if (peekNext() == '/') {
+                skipLineComments();
+                return nextToken();
+            } else if (peekNext() == '*') {
+                skipBlockComments();
+                return nextToken();
+            } else {
+                advance();
+                return new Token (TokenType.SLASH, "/", line); // Adicionando line como parâmetro
+            }
+
+        case '+':
+            advance();
+            return new Token (TokenType.PLUS, "+", line); // Adicionando line como parâmetro
+        case '-':
+            advance();
+            return new Token (TokenType.MINUS, "-", line); // Adicionando line como parâmetro
+        case '*':
+            advance();
+            return new Token (TokenType.ASTERISK, "*", line); // Adicionando line como parâmetro
+        case '.':
+            advance();
+            return new Token (TokenType.DOT, ".", line); // Adicionando line como parâmetro
+        case '&':
+            advance();
+            return new Token (TokenType.AND, "&", line); // Adicionando line como parâmetro
+        case '|':
+            advance();
+            return new Token (TokenType.OR, "|", line); // Adicionando line como parâmetro
+        case '~':
+            advance();
+            return new Token (TokenType.NOT, "~", line); // Adicionando line como parâmetro
+
+        case '>':
+            advance();
+            return new Token (TokenType.GT, ">", line); // Adicionando line como parâmetro
+        case '<':
+            advance();
+            return new Token (TokenType.LT, "<", line); // Adicionando line como parâmetro
+        case '=':
+            advance();
+            return new Token (TokenType.EQ, "=", line); // Adicionando line como parâmetro
+
+        case '(':
+            advance();
+            return new Token (TokenType.LPAREN, "(", line); // Adicionando line como parâmetro
+        case ')':
+            advance();
+            return new Token (TokenType.RPAREN, ")", line); // Adicionando line como parâmetro
+        case '{':
+            advance();
+            return new Token (TokenType.LBRACE, "{", line); // Adicionando line como parâmetro
+        case '}':
+            advance();
+            return new Token (TokenType.RBRACE, "}", line); // Adicionando line como parâmetro
+        case '[':
+            advance();
+            return new Token (TokenType.LBRACKET, "[", line); // Adicionando line como parâmetro
+        case ']':
+            advance();
+            return new Token (TokenType.RBRACKET, "]", line); // Adicionando line como parâmetro
+        case ';':
+            advance();
+            return new Token (TokenType.SEMICOLON, ";", line); // Adicionando line como parâmetro
+        case ',':
+            advance();
+            return new Token (TokenType.COMMA, ",", line); // Adicionando line como parâmetro
+        case 0:
+            return new Token (EOF, "EOF", line); // Adicionando line como parâmetro
+        default:
+            advance();
+            return new Token(ILLEGAL, Character.toString(ch), line); // Adicionando line como parâmetro
+    }
+}
+
+private Token identifier() {
+    while (isAlphaNumeric(peek())) {
+        advance();
+    }
+
+    String id = new String(input, start, current - start, StandardCharsets.UTF_8);
+    TokenType type = keywords.get(id);
+    if (type == null) {
+        type = TokenType.IDENT;
+    }
+    return new Token(type, id, line); // Adicionando line como parâmetro
+}
+
+private Token number() {
+    while (Character.isDigit(peek())) {
+        advance();
+    }
+
+    String num = new String(input, start, current - start, StandardCharsets.UTF_8);
+    return new Token(TokenType.NUMBER, num, line); // Adicionando line como parâmetro
+}
+
+private Token string() {
+    advance();
+    start = current;
+    while (peek() != '"' && peek() != 0) {
+        advance();
+    }
+    String s = new String(input, start, current - start, StandardCharsets.UTF_8);
+    Token token = new Token (TokenType.STRING, s, line); // Adicionando line como parâmetro
+    advance();
+    return token;
+}
 
     private void advance()  {
         char ch = peek();
