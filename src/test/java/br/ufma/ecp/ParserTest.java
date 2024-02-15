@@ -98,4 +98,142 @@ public class ParserTest extends TestSupport {
 
     }
 
+    @Test
+    public void testParseLetSimple() {
+        var input = "let var1 = 10+20;";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseLet();
+				var expectedResult =  """
+        <letStatement>
+        <keyword> let </keyword>
+        <identifier> var1 </identifier>
+        <symbol> = </symbol>
+        <expression>
+        <term>
+        <integerConstant> 10 </integerConstant>
+        </term>
+        <symbol> + </symbol>
+        <term>
+        <integerConstant> 20 </integerConstant>
+        </term>
+        </expression>
+        <symbol> ; </symbol>
+    </letStatement> 
+				""";
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParseLetSimple1() {
+        var input = "let var1[1] = 10+20;";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseLet();
+				var expectedResult =  """
+        <letStatement>
+        <keyword> let </keyword>
+        <identifier> var1 </identifier>
+        <symbol> [ </symbol>
+            <expression>
+            <term>
+            <integerConstant> 1 </integerConstant>
+            </term>
+            </expression>
+        <symbol> ] </symbol>
+        <symbol> = </symbol>
+        <expression>
+        <term>
+        <integerConstant> 10 </integerConstant>
+        </term>
+        <symbol> + </symbol>
+        <term>
+        <integerConstant> 20 </integerConstant>
+        </term>
+        </expression>
+        <symbol> ; </symbol>
+    </letStatement> 
+				""";
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParseSubroutineCall() {
+        var input = "hello()";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseSubroutineCall();
+        
+        var expectedResult =  """
+        <identifier> hello </identifier>
+        <symbol> ( </symbol>
+        <symbol> ) </symbol
+        """;
+        var result = parser.XMLOutput();
+        result = result.replaceAll("\r", "");
+        expectedResult = expectedResult.replaceAll("  ", "");
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParseDo() {
+        var input = "do hello();";
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parseDo();
+
+        var expectedResult = """
+            <doStatement>
+            <keyword> do </keyword>
+            <identifier> hello </identifier>
+            <symbol> ( </symbol>
+            <symbol> ) </symbol>
+            <symbol> ; </symbol>
+            </doStatement>
+                """;
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParserWithLessSquareGame() throws IOException {
+        var input = fromFile("ExpressionLessSquare/SquareGame.jack");
+        var expectedResult =  fromFile("ExpressionLessSquare/SquareGame.xml");
+
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parse();
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testParserWithSquareGame() throws IOException {
+        var input = fromFile("Square/SquareGame.jack");
+        var expectedResult =  fromFile("Square/SquareGame.xml");
+
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parse();
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        assertEquals(expectedResult, result);
+    }
+
+
+    @Test
+    public void testParserWithSquare() throws IOException {
+        var input = fromFile("Square/Square.jack");
+        var expectedResult =  fromFile("Square/Square.xml");
+
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parse();
+        var result = parser.XMLOutput();
+        expectedResult = expectedResult.replaceAll("  ", "");
+        assertEquals(expectedResult, result);
+    }
+
 }
