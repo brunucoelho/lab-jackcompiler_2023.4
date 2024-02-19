@@ -1,16 +1,11 @@
 package br.ufma.ecp;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
-
-import br.ufma.ecp.token.Token;
-import br.ufma.ecp.token.TokenType;
-
-
 
 public class ParserTest extends TestSupport {
 
@@ -62,7 +57,7 @@ public class ParserTest extends TestSupport {
     
         var expectedResult =  """
         <term>
-        <stringConstant> Hello World </stringConstant>
+        <stringConst> Hello World </stringConst>
         </term>
         """;
             
@@ -170,7 +165,7 @@ public class ParserTest extends TestSupport {
         var expectedResult =  """
         <identifier> hello </identifier>
         <symbol> ( </symbol>
-        <symbol> ) </symbol
+        <symbol> ) </symbol>
         """;
         var result = parser.XMLOutput();
         result = result.replaceAll("\r", "");
@@ -180,15 +175,24 @@ public class ParserTest extends TestSupport {
 
     @Test
     public void testParseDo() {
-        var input = "do hello();";
+        var input = "do Sys.wait(5);";
         var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
         parser.parseDo();
 
         var expectedResult = """
             <doStatement>
             <keyword> do </keyword>
-            <identifier> hello </identifier>
+            <identifier> Sys </identifier>
+            <symbol> . </symbol>
+            <identifier> wait </identifier>
             <symbol> ( </symbol>
+            <expressionList>
+            <expression>
+                <term>
+                <integerConstant> 5 </integerConstant>
+                </term>
+            </expression>
+            </expressionList>
             <symbol> ) </symbol>
             <symbol> ; </symbol>
             </doStatement>
